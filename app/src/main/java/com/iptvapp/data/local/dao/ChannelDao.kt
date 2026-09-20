@@ -70,7 +70,7 @@ interface ChannelDao {
     suspend fun insertChannels(channels: List<ChannelEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertChannel(channel: ChannelEntity)
+    suspend fun insertChannel(channel: ChannelEntity): Long
 
     @Update
     suspend fun updateChannel(channel: ChannelEntity)

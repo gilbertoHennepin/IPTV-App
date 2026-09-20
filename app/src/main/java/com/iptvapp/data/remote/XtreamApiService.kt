@@ -2,6 +2,8 @@ package com.iptvapp.data.remote
 
 import com.iptvapp.data.remote.dto.LiveCategoryDto
 import com.iptvapp.data.remote.dto.LiveStreamDto
+import com.iptvapp.data.remote.dto.SeriesDto
+import com.iptvapp.data.remote.dto.SeriesInfoResponse
 import com.iptvapp.data.remote.dto.ShortEpgResponse
 import com.iptvapp.data.remote.dto.VodStreamDto
 import retrofit2.Response
@@ -65,6 +67,24 @@ interface XtreamApiService {
         @Query("action") action: String = "get_vod_streams",
         @Query("category_id") categoryId: String? = null
     ): Response<List<VodStreamDto>>
+
+    @GET
+    suspend fun getSeries(
+        @Url url: String,
+        @Query("username") username: String,
+        @Query("password") password: String,
+        @Query("action") action: String = "get_series",
+        @Query("category_id") categoryId: String? = null
+    ): Response<List<SeriesDto>>
+
+    @GET
+    suspend fun getSeriesInfo(
+        @Url url: String,
+        @Query("username") username: String,
+        @Query("password") password: String,
+        @Query("series_id") seriesId: Int,
+        @Query("action") action: String = "get_series_info"
+    ): Response<SeriesInfoResponse>
 
     /**
      * Fetches the short EPG (Electronic Program Guide) for a given [streamId].

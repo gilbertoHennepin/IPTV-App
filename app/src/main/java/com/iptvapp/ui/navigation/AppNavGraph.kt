@@ -45,9 +45,36 @@ fun AppNavGraph(navController: NavHostController) {
                     navController.navigate(
                         route = Screen.Player.createRoute(channelId)
                     ) {
-                        // Save the Home screen state (scroll + focus) before navigating
                         launchSingleTop = true
                         restoreState = true
+                    }
+                },
+                onSeriesClick = { seriesId ->
+                    navController.navigate(
+                        route = Screen.SeriesDetail.createRoute(seriesId)
+                    ) {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
+        }
+
+        // ── Series Detail Screen ─────────────────────────────────────────
+        composable(
+            route = Screen.SeriesDetail.route,
+            arguments = listOf(
+                navArgument(Screen.ARG_CHANNEL_ID) {
+                    type = NavType.LongType
+                }
+            )
+        ) {
+            com.iptvapp.ui.screens.series.SeriesDetailScreen(
+                onEpisodeClick = { episodeId ->
+                    navController.navigate(
+                        route = Screen.Player.createRoute(episodeId)
+                    ) {
+                        launchSingleTop = true
                     }
                 }
             )

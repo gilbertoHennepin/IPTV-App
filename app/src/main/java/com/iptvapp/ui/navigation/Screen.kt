@@ -24,6 +24,12 @@ sealed class Screen(val route: String) {
         fun createRoute(channelId: Long): String = "player/$channelId"
     }
 
+    /** Series Detail screen for TV Series. */
+    data object SeriesDetail : Screen("series_detail/{channelId}") {
+        /** Builds a concrete route for a given series ID. */
+        fun createRoute(seriesId: Long): String = "series_detail/$seriesId"
+    }
+
     companion object {
         /** NavArgument key for the channel ID. */
         const val ARG_CHANNEL_ID = "channelId"

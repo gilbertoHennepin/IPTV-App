@@ -150,6 +150,72 @@ class ChannelRepository @Inject constructor(
         entities.size
     }
 
+    /** Observe all Series channels. */
+    fun getSeriesChannels(): Flow<List<ChannelEntity>> =
+        channelDao.getChannelsByStreamType("series")
+
+    /**
+     * Fetches Series from the Xtream server and **appends** them
+     * to the existing channels table.
+     */
+    suspend fun syncSeries(
+        serverUrl: String,
+        username: String,
+        password: String,
+        categoryId: String? = null
+    ): Result<Int> = runCatching {
+        val categories = fetchCategoryLookup(serverUrl, username, password)
+
+        val response = xtreamApi.getSeries(serverUrl, username, password, categoryId = categoryId)
+        if (!response.isSuccessful) {
+            error("Failed to fetch series: HTTP ${response.code()}")
+        }
+        val dtos = response.body() ?: emptyList()
+        val entities = dtos.map { dto ->
+            dto.toChannelEntity(categoryName = categories[dto.categoryId])
+        }
+
+        channelDao.insertChannelsAndRebuildIndex(entities)
+        entities.size
+    }
+
+    /** Fetches Series Info dynamically. */
+    suspend fun getSeriesInfo(
+        serverUrl: String,
+        username: String,
+        password: String,
+        seriesId: Int
+    ): Result<com.iptvapp.data.remote.dto.SeriesInfoResponse> = runCatching {
+        val response = xtreamApi.getSeriesInfo(serverUrl, username, password, seriesId)
+        if (!response.isSuccessful) {
+            error("Failed to fetch series info: HTTP ${response.code()}")
+        }
+        response.body() ?: error("Empty body")
+    }
+
+    /**
+     * Temporarily stores an episode in the database so the Player can find it by ID.
+     */
+    suspend fun createEpisodeChannel(
+        serverUrl: String,
+        username: String,
+        password: String,
+        episode: com.iptvapp.data.remote.dto.EpisodeDto
+    ): Long {
+        val url = "$serverUrl/series/$username/$password/${episode.id}.${episode.containerExtension ?: "mp4"}"
+        val entity = ChannelEntity(
+            name = episode.title ?: "Episode ${episode.episodeNum}",
+            url = url,
+            logoUrl = episode.info?.movieImage,
+            categoryId = null,
+            categoryName = null,
+            streamId = episode.id.toIntOrNull(),
+            streamType = "episode",
+            addedTimestamp = episode.added?.toLongOrNull()
+        )
+        return channelDao.insertChannel(entity)
+    }
+
     /**
      * Fetches the short EPG for a specific stream.
      */

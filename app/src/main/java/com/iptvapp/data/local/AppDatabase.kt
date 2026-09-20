@@ -22,11 +22,11 @@ import com.iptvapp.data.local.entity.ChannelFtsEntity
 @Database(
     entities = [
         ChannelEntity::class,
-        ChannelFtsEntity::class,
-        CategoryEntity::class
+        CategoryEntity::class,
+        ChannelFtsEntity::class
     ],
     version = 2,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun channelDao(): ChannelDao

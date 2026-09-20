@@ -107,7 +107,13 @@ class HomeViewModel @Inject constructor(
                     _syncMessage.value = "Syncing Movies (VOD)..."
                     val vodResult = repository.syncVodStreams(host, user, pass)
                     if (vodResult.isSuccess) {
-                        _syncMessage.value = "Sync Complete!"
+                        _syncMessage.value = "Syncing TV Series..."
+                        val seriesResult = repository.syncSeries(host, user, pass)
+                        if (seriesResult.isSuccess) {
+                            _syncMessage.value = "Sync Complete!"
+                        } else {
+                            _syncMessage.value = "Error syncing Series: ${seriesResult.exceptionOrNull()?.message}"
+                        }
                     } else {
                         _syncMessage.value = "Error syncing VOD: ${vodResult.exceptionOrNull()?.message}"
                     }

@@ -2,6 +2,7 @@ package com.iptvapp.data.remote.dto
 
 import com.iptvapp.data.local.entity.CategoryEntity
 import com.iptvapp.data.local.entity.ChannelEntity
+import com.iptvapp.data.remote.dto.SeriesDto
 
 /**
  * Extension functions that map network DTOs to local Room entities.
@@ -62,4 +63,21 @@ fun LiveCategoryDto.toCategoryEntity(): CategoryEntity = CategoryEntity(
     categoryId = categoryId,
     categoryName = categoryName,
     parentId = parentId
+)
+
+/**
+ * Maps a [SeriesDto] to a [ChannelEntity].
+ * We use streamType = "series". The url is left blank since series cannot be played directly.
+ */
+fun SeriesDto.toChannelEntity(
+    categoryName: String? = null
+): ChannelEntity = ChannelEntity(
+    name = name,
+    url = "", // Series have no direct stream URL
+    logoUrl = cover,
+    categoryName = categoryName,
+    categoryId = categoryId,
+    streamId = seriesId, // Map series_id to streamId
+    streamType = "series",
+    addedTimestamp = lastModified?.toLongOrNull()
 )
