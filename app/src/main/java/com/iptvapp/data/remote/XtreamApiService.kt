@@ -7,6 +7,8 @@ import com.iptvapp.data.remote.dto.VodStreamDto
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
+import retrofit2.http.Url
+import com.google.gson.JsonObject
 
 /**
  * Retrofit interface targeting the Xtream Codes **player_api.php** endpoint.
@@ -16,13 +18,21 @@ import retrofit2.http.Query
  */
 interface XtreamApiService {
 
+    @GET
+    suspend fun authenticate(
+        @Url url: String,
+        @Query("username") username: String,
+        @Query("password") password: String
+    ): Response<JsonObject>
+
     /**
      * Fetches all available live stream categories.
      *
      * GET player_api.php?username=…&password=…&action=get_live_categories
      */
-    @GET("player_api.php")
+    @GET
     suspend fun getLiveCategories(
+        @Url url: String,
         @Query("username") username: String,
         @Query("password") password: String,
         @Query("action") action: String = "get_live_categories"
@@ -33,8 +43,9 @@ interface XtreamApiService {
      *
      * GET player_api.php?username=…&password=…&action=get_live_streams[&category_id=…]
      */
-    @GET("player_api.php")
+    @GET
     suspend fun getLiveStreams(
+        @Url url: String,
         @Query("username") username: String,
         @Query("password") password: String,
         @Query("action") action: String = "get_live_streams",
@@ -46,8 +57,9 @@ interface XtreamApiService {
      *
      * GET player_api.php?username=…&password=…&action=get_vod_streams[&category_id=…]
      */
-    @GET("player_api.php")
+    @GET
     suspend fun getVodStreams(
+        @Url url: String,
         @Query("username") username: String,
         @Query("password") password: String,
         @Query("action") action: String = "get_vod_streams",
@@ -60,8 +72,9 @@ interface XtreamApiService {
      *
      * GET player_api.php?username=…&password=…&action=get_short_epg&stream_id=…[&limit=…]
      */
-    @GET("player_api.php")
+    @GET
     suspend fun getShortEpg(
+        @Url url: String,
         @Query("username") username: String,
         @Query("password") password: String,
         @Query("stream_id") streamId: Int,

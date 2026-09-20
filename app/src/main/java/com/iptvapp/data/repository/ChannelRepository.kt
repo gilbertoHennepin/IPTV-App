@@ -67,7 +67,7 @@ class ChannelRepository @Inject constructor(
         username: String,
         password: String
     ): Result<List<CategoryEntity>> = runCatching {
-        val response = xtreamApi.getLiveCategories(username, password)
+        val response = xtreamApi.getLiveCategories(serverUrl, username, password)
         if (!response.isSuccessful) {
             error("Failed to fetch categories: HTTP ${response.code()}")
         }
@@ -96,7 +96,7 @@ class ChannelRepository @Inject constructor(
         // Fetch category lookup map for resolving names
         val categories = fetchCategoryLookup(serverUrl, username, password)
 
-        val response = xtreamApi.getLiveStreams(username, password, categoryId = categoryId)
+        val response = xtreamApi.getLiveStreams(serverUrl, username, password, categoryId = categoryId)
         if (!response.isSuccessful) {
             error("Failed to fetch live streams: HTTP ${response.code()}")
         }
@@ -127,7 +127,7 @@ class ChannelRepository @Inject constructor(
     ): Result<Int> = runCatching {
         val categories = fetchCategoryLookup(serverUrl, username, password)
 
-        val response = xtreamApi.getVodStreams(username, password, categoryId = categoryId)
+        val response = xtreamApi.getVodStreams(serverUrl, username, password, categoryId = categoryId)
         if (!response.isSuccessful) {
             error("Failed to fetch VOD streams: HTTP ${response.code()}")
         }
@@ -150,12 +150,13 @@ class ChannelRepository @Inject constructor(
      * Fetches the short EPG for a specific stream.
      */
     suspend fun getShortEpg(
+        serverUrl: String,
         username: String,
         password: String,
         streamId: Int,
         limit: Int? = null
     ): Result<List<EpgListingDto>> = runCatching {
-        val response = xtreamApi.getShortEpg(username, password, streamId, limit = limit)
+        val response = xtreamApi.getShortEpg(serverUrl, username, password, streamId, limit = limit)
         if (!response.isSuccessful) {
             error("Failed to fetch EPG: HTTP ${response.code()}")
         }
@@ -196,7 +197,7 @@ class ChannelRepository @Inject constructor(
         username: String,
         password: String
     ): Map<String, String> {
-        val response = xtreamApi.getLiveCategories(username, password)
+        val response = xtreamApi.getLiveCategories(serverUrl, username, password)
         val dtos = response.body() ?: return emptyMap()
         return dtos.associate { it.categoryId to it.categoryName }
     }

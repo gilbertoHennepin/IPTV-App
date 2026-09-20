@@ -6,6 +6,9 @@ package com.iptvapp.ui.navigation
  */
 sealed class Screen(val route: String) {
 
+    /** Login screen. */
+    data object Login : Screen("login")
+
     /** Home screen — live channel grid. */
     data object Home : Screen("home")
 

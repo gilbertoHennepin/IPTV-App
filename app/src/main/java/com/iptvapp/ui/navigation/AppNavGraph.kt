@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.iptvapp.ui.screens.detail.ChannelDetailScreen
 import com.iptvapp.ui.screens.home.HomeScreen
+import com.iptvapp.ui.screens.login.LoginScreen
 import com.iptvapp.ui.screens.player.PlayerScreen
 
 /**
@@ -21,8 +22,20 @@ import com.iptvapp.ui.screens.player.PlayerScreen
 fun AppNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Login.route
     ) {
+        // ── Login Screen ─────────────────────────────────────────────────
+        composable(
+            route = Screen.Login.route
+        ) {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
         // ── Home Screen (Channel Grid) ───────────────────────────────────
         composable(
             route = Screen.Home.route
