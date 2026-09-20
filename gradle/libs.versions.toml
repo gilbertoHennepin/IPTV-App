@@ -68,8 +68,9 @@ androidx-compose-foundation = { group = "androidx.compose.foundation", name = "f
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 
 # TV Compose
-androidx-tv-material = { group = "androidx.tv", name = "tv-material", version.ref = "tvCompose" }
 androidx-tv-foundation = { group = "androidx.tv", name = "tv-foundation", version.ref = "tvFoundation" }
+androidx-tv-material = { group = "androidx.tv", name = "tv-material", version.ref = "tvCompose" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version = "1.0.1" }
 
 # Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }

@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import com.iptvapp.ui.navigation.AppNavGraph
 import com.iptvapp.ui.theme.IPTVAppTheme
@@ -23,6 +24,7 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalTvMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setContent {
             IPTVAppTheme {
