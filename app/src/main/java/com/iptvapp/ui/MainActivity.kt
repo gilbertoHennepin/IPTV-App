@@ -3,21 +3,20 @@ package com.iptvapp.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.navigation.compose.rememberNavController
 import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.Text
+import com.iptvapp.ui.navigation.AppNavGraph
 import com.iptvapp.ui.theme.IPTVAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Main entry-point Activity for the IPTV application.
+ *
+ * Hosts the Compose navigation graph inside the TV Material3 theme.
  * Annotated with @AndroidEntryPoint to enable Hilt injection
- * into this Activity and its hosted Composables.
+ * into this Activity and all hosted Composables.
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -27,17 +26,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             IPTVAppTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFF121212)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "IPTV App",
-                        color = Color.White
-                    )
-                }
+                val navController = rememberNavController()
+                AppNavGraph(navController = navController)
             }
         }
     }
