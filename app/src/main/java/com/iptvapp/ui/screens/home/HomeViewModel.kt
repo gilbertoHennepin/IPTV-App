@@ -129,4 +129,11 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    /** Toggles the favorite status of a channel. */
+    fun toggleFavorite(channel: ChannelEntity) {
+        viewModelScope.launch {
+            repository.toggleFavorite(channel)
+        }
+    }
 }

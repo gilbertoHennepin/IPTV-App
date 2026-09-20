@@ -64,7 +64,13 @@ interface ChannelDao {
     @Query("SELECT * FROM channels WHERE stream_id = :streamId LIMIT 1")
     suspend fun getChannelByStreamId(streamId: Int): ChannelEntity?
 
+    @Query("SELECT stream_id FROM channels WHERE is_favorite = 1 AND stream_id IS NOT NULL")
+    suspend fun getFavoriteStreamIds(): List<Int>
+
     // ── Writes ───────────────────────────────────────────────────────────
+
+    @Query("UPDATE channels SET is_favorite = :isFavorite WHERE id = :id")
+    suspend fun toggleFavorite(id: Long, isFavorite: Boolean)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertChannels(channels: List<ChannelEntity>)

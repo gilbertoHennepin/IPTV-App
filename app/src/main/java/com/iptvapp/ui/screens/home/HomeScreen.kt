@@ -63,7 +63,7 @@ fun HomeScreen(
     val syncMessage by viewModel.syncMessage.collectAsState()
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Live TV", "TV Guide", "Movies", "Series", "Search")
+    val tabs = listOf("Live TV", "TV Guide", "Movies", "Series", "Favorites", "Search")
 
     // ── FocusRequester Map ────────────────────────────────────────────────
     // One FocusRequester per channel, keyed by channel ID.
@@ -147,8 +147,10 @@ fun HomeScreen(
             }
 
             // ── Content ──────────────────────────────────────────────────
-            if (selectedTabIndex == 4) {
+            if (selectedTabIndex == 5) {
                 SearchScreen(onChannelClick = onChannelClick)
+            } else if (selectedTabIndex == 4) {
+                com.iptvapp.ui.screens.favorites.FavoritesScreen(onChannelClick = onChannelClick)
             } else if (selectedTabIndex == 3) {
                 com.iptvapp.ui.screens.series.SeriesScreen(onSeriesClick = onSeriesClick)
             } else if (selectedTabIndex == 2) {
@@ -185,7 +187,8 @@ fun HomeScreen(
                                 channel = channel,
                                 focusRequester = focusRequester,
                                 onFocused = { viewModel.onChannelFocused(channel.id) },
-                                onClick = { onChannelClick(channel.id) }
+                                onClick = { onChannelClick(channel.id) },
+                                onLongClick = { viewModel.toggleFavorite(channel) }
                             )
                         }
                     )

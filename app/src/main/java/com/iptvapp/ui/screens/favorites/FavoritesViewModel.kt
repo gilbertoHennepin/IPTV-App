@@ -1,4 +1,4 @@
-package com.iptvapp.ui.screens.vod
+package com.iptvapp.ui.screens.favorites
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,19 +12,17 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VodViewModel @Inject constructor(
+class FavoritesViewModel @Inject constructor(
     private val repository: ChannelRepository
 ) : ViewModel() {
 
-    /** All VOD channels from the local database, observed reactively. */
-    val movies: StateFlow<List<ChannelEntity>> = repository.getVodChannels()
+    val favoriteChannels: StateFlow<List<ChannelEntity>> = repository.getFavoriteChannels()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 
-    /** Toggles the favorite status of a channel. */
     fun toggleFavorite(channel: ChannelEntity) {
         viewModelScope.launch {
             repository.toggleFavorite(channel)

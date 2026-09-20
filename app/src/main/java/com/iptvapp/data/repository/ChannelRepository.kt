@@ -87,13 +87,9 @@ class ChannelRepository @Inject constructor(
     }
 
     /**
-     * Fetches live streams from the Xtream server and persists them locally.
-     *
-     * Uses the @Transaction-annotated [ChannelDao.replaceAllChannelsAndRebuildIndex]
-     * to atomically replace channels and rebuild the FTS index in one batch.
-     *
-     * @param categoryId Optional category filter. Pass null for all streams.
-     * @return [Result.success] with the channel count, or [Result.failure] on error.
+     * Fetches Live TV streams from the Xtream server and fully replaces
+     * the local database contents, rebuilding the search index.
+     * Preserves existing favorites.
      */
     suspend fun syncLiveStreams(
         serverUrl: String,
@@ -101,8 +97,8 @@ class ChannelRepository @Inject constructor(
         password: String,
         categoryId: String? = null
     ): Result<Int> = runCatching {
-        // Fetch category lookup map for resolving names
         val categories = fetchCategoryLookup(serverUrl, username, password)
+        val favs = channelDao.getFavoriteStreamIds().toSet()
 
         val response = xtreamApi.getLiveStreams(serverUrl, username, password, categoryId = categoryId)
         if (!response.isSuccessful) {
@@ -114,18 +110,19 @@ class ChannelRepository @Inject constructor(
                 serverUrl = serverUrl,
                 username = username,
                 password = password,
-                categoryName = categories[dto.categoryId]
+                categoryName = categories[dto.categoryId],
+                isFavorite = dto.streamId in favs
             )
         }
 
-        // Atomic: delete → insert → FTS rebuild in a single @Transaction
+        // Atomic: delete + insert + FTS rebuild in a single @Transaction
         channelDao.replaceAllChannelsAndRebuildIndex(entities)
         entities.size
     }
 
     /**
      * Fetches VOD streams from the Xtream server and **appends** them
-     * to the existing channels table (does not clear live channels).
+     * to the existing channels table. Preserves existing favorites.
      */
     suspend fun syncVodStreams(
         serverUrl: String,
@@ -134,6 +131,7 @@ class ChannelRepository @Inject constructor(
         categoryId: String? = null
     ): Result<Int> = runCatching {
         val categories = fetchCategoryLookup(serverUrl, username, password)
+        val favs = channelDao.getFavoriteStreamIds().toSet()
 
         val response = xtreamApi.getVodStreams(serverUrl, username, password, categoryId = categoryId)
         if (!response.isSuccessful) {
@@ -145,7 +143,8 @@ class ChannelRepository @Inject constructor(
                 serverUrl = serverUrl,
                 username = username,
                 password = password,
-                categoryName = categories[dto.categoryId]
+                categoryName = categories[dto.categoryId],
+                isFavorite = dto.streamId in favs
             )
         }
 
@@ -160,7 +159,7 @@ class ChannelRepository @Inject constructor(
 
     /**
      * Fetches Series from the Xtream server and **appends** them
-     * to the existing channels table.
+     * to the existing channels table. Preserves existing favorites.
      */
     suspend fun syncSeries(
         serverUrl: String,
@@ -169,6 +168,7 @@ class ChannelRepository @Inject constructor(
         categoryId: String? = null
     ): Result<Int> = runCatching {
         val categories = fetchCategoryLookup(serverUrl, username, password)
+        val favs = channelDao.getFavoriteStreamIds().toSet()
 
         val response = xtreamApi.getSeries(serverUrl, username, password, categoryId = categoryId)
         if (!response.isSuccessful) {
@@ -176,7 +176,10 @@ class ChannelRepository @Inject constructor(
         }
         val dtos = response.body() ?: emptyList()
         val entities = dtos.map { dto ->
-            dto.toChannelEntity(categoryName = categories[dto.categoryId])
+            dto.toChannelEntity(
+                categoryName = categories[dto.categoryId],
+                isFavorite = dto.seriesId in favs
+            )
         }
 
         channelDao.insertChannelsAndRebuildIndex(entities)

@@ -35,7 +35,8 @@ fun SeriesScreen(
                 channel = series,
                 focusRequester = focusRequester,
                 onFocused = { },
-                onClick = { onSeriesClick(series.id) }
+                onClick = { onSeriesClick(series.id) },
+                onLongClick = { viewModel.toggleFavorite(series) }
             )
         }
     )

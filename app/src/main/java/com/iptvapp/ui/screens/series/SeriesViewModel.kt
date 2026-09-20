@@ -8,11 +8,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SeriesViewModel @Inject constructor(
-    repository: ChannelRepository
+    private val repository: ChannelRepository
 ) : ViewModel() {
 
     val seriesList: StateFlow<List<ChannelEntity>> = repository.getSeriesChannels()
@@ -21,4 +22,11 @@ class SeriesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+    /** Toggles the favorite status of a channel. */
+    fun toggleFavorite(channel: ChannelEntity) {
+        viewModelScope.launch {
+            repository.toggleFavorite(channel)
+        }
+    }
 }

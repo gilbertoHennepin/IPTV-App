@@ -23,7 +23,8 @@ fun LiveStreamDto.toChannelEntity(
     serverUrl: String,
     username: String,
     password: String,
-    categoryName: String? = null
+    categoryName: String? = null,
+    isFavorite: Boolean = false
 ): ChannelEntity = ChannelEntity(
     name = name,
     url = "$serverUrl/live/$username/$password/$streamId.ts",
@@ -34,6 +35,7 @@ fun LiveStreamDto.toChannelEntity(
     epgChannelId = epgChannelId,
     streamType = streamType ?: "live",
     tvArchive = tvArchive == 1,
+    isFavorite = isFavorite,
     addedTimestamp = added?.toLongOrNull()
 )
 
@@ -44,7 +46,8 @@ fun VodStreamDto.toChannelEntity(
     serverUrl: String,
     username: String,
     password: String,
-    categoryName: String? = null
+    categoryName: String? = null,
+    isFavorite: Boolean = false
 ): ChannelEntity = ChannelEntity(
     name = name,
     url = "$serverUrl/movie/$username/$password/$streamId.${containerExtension ?: "mp4"}",
@@ -53,6 +56,7 @@ fun VodStreamDto.toChannelEntity(
     categoryId = categoryId,
     streamId = streamId,
     streamType = streamType ?: "movie",
+    isFavorite = isFavorite,
     addedTimestamp = added?.toLongOrNull()
 )
 
@@ -70,7 +74,8 @@ fun LiveCategoryDto.toCategoryEntity(): CategoryEntity = CategoryEntity(
  * We use streamType = "series". The url is left blank since series cannot be played directly.
  */
 fun SeriesDto.toChannelEntity(
-    categoryName: String? = null
+    categoryName: String? = null,
+    isFavorite: Boolean = false
 ): ChannelEntity = ChannelEntity(
     name = name,
     url = "", // Series have no direct stream URL
@@ -79,5 +84,6 @@ fun SeriesDto.toChannelEntity(
     categoryId = categoryId,
     streamId = seriesId, // Map series_id to streamId
     streamType = "series",
+    isFavorite = isFavorite,
     addedTimestamp = lastModified?.toLongOrNull()
 )
