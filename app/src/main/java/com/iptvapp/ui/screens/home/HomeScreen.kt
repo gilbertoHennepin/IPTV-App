@@ -177,39 +177,18 @@ fun HomeScreen(
                         }
                     }
                 } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 176.dp),
-                        contentPadding = PaddingValues(
-                            start = 48.dp,
-                            end = 48.dp,
-                            top = 8.dp,
-                            bottom = 48.dp
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(20.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(
-                            items = channels,
-                            key = { it.id }
-                        ) { channel ->
-                            // Get or create a FocusRequester for this channel
-                            val focusRequester = focusRequesters.getOrPut(channel.id) {
-                                FocusRequester()
-                            }
-
+                    com.iptvapp.ui.components.CategorySidebarGrid(
+                        channels = channels,
+                        minGridCellSize = 200.dp,
+                        itemContent = { channel, focusRequester ->
                             ChannelCard(
                                 channel = channel,
                                 focusRequester = focusRequester,
-                                onFocused = {
-                                    viewModel.onChannelFocused(channel.id)
-                                },
-                                onClick = {
-                                    onChannelClick(channel.id)
-                                }
+                                onFocused = { viewModel.onChannelFocused(channel.id) },
+                                onClick = { onChannelClick(channel.id) }
                             )
                         }
-                    }
+                    )
                 }
             }
         }

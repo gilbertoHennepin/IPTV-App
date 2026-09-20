@@ -29,8 +29,8 @@ class HomeViewModel @Inject constructor(
     private val authManager: AuthManager
 ) : ViewModel() {
 
-    /** All channels from the local database, observed reactively. */
-    val channels: StateFlow<List<ChannelEntity>> = repository.getAllChannels()
+    /** All live channels from the local database, observed reactively. */
+    val channels: StateFlow<List<ChannelEntity>> = repository.getLiveChannels()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

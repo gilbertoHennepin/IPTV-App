@@ -26,36 +26,17 @@ fun SeriesScreen(
 ) {
     val seriesList by viewModel.seriesList.collectAsState()
 
-    if (seriesList.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "No TV Series found.",
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.Gray
+    com.iptvapp.ui.components.CategorySidebarGrid(
+        channels = seriesList,
+        minGridCellSize = 140.dp,
+        contentPadding = PaddingValues(start = 48.dp, end = 48.dp, top = 8.dp, bottom = 48.dp),
+        itemContent = { series, focusRequester ->
+            ChannelCard(
+                channel = series,
+                focusRequester = focusRequester,
+                onFocused = { },
+                onClick = { onSeriesClick(series.id) }
             )
         }
-    } else {
-        val focusRequesters = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateMapOf<Long, androidx.compose.ui.focus.FocusRequester>() }
-
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 140.dp),
-            contentPadding = PaddingValues(start = 48.dp, end = 48.dp, top = 8.dp, bottom = 48.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(seriesList, key = { it.id }) { series ->
-                val focusRequester = focusRequesters.getOrPut(series.id) { androidx.compose.ui.focus.FocusRequester() }
-                ChannelCard(
-                    channel = series,
-                    focusRequester = focusRequester,
-                    onFocused = { },
-                    onClick = { onSeriesClick(series.id) }
-                )
-            }
-        }
-    }
+    )
 }

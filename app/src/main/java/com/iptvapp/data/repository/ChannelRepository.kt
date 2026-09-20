@@ -42,6 +42,10 @@ class ChannelRepository @Inject constructor(
     fun getChannelsByCategory(categoryId: String): Flow<List<ChannelEntity>> =
         channelDao.getChannelsByCategory(categoryId)
 
+    /** Observe all live channels. */
+    fun getLiveChannels(): Flow<List<ChannelEntity>> =
+        channelDao.getChannelsByStreamType("live")
+
     /** Observe all VOD channels. */
     fun getVodChannels(): Flow<List<ChannelEntity>> =
         channelDao.getChannelsByStreamType("movie")

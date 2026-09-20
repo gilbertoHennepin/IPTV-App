@@ -31,33 +31,17 @@ fun VodScreen(
             .fillMaxSize()
             .padding(start = 48.dp, end = 48.dp, top = 24.dp)
     ) {
-        if (movies.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = "No movies available.",
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.titleLarge
+        com.iptvapp.ui.components.CategorySidebarGrid(
+            channels = movies,
+            minGridCellSize = 150.dp,
+            contentPadding = PaddingValues(bottom = 48.dp),
+            itemContent = { movie, _ ->
+                MovieCard(
+                    movie = movie,
+                    onClick = { onMovieClick(movie.id) }
                 )
             }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 150.dp),
-                contentPadding = PaddingValues(bottom = 48.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(
-                    items = movies,
-                    key = { it.id }
-                ) { movie ->
-                    MovieCard(
-                        movie = movie,
-                        onClick = { onMovieClick(movie.id) }
-                    )
-                }
-            }
-        }
+        )
     }
 }
 
