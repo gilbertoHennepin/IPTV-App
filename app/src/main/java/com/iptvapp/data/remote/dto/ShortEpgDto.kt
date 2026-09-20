@@ -1,0 +1,53 @@
+package com.iptvapp.data.remote.dto
+
+import com.google.gson.annotations.SerializedName
+
+/**
+ * Top-level wrapper for the short EPG response.
+ * Endpoint: player_api.php?action=get_short_epg&stream_id=...
+ */
+data class ShortEpgResponse(
+    @SerializedName("epg_listings")
+    val epgListings: List<EpgListingDto>
+)
+
+/**
+ * Individual EPG listing entry within a short EPG response.
+ */
+data class EpgListingDto(
+    @SerializedName("id")
+    val id: String,
+
+    @SerializedName("epg_id")
+    val epgId: String?,
+
+    @SerializedName("title")
+    val title: String,
+
+    @SerializedName("lang")
+    val lang: String?,
+
+    @SerializedName("start")
+    val start: String,
+
+    @SerializedName("end")
+    val end: String,
+
+    @SerializedName("description")
+    val description: String?,
+
+    @SerializedName("channel_id")
+    val channelId: String?,
+
+    @SerializedName("start_timestamp")
+    val startTimestamp: String?,
+
+    @SerializedName("stop_timestamp")
+    val stopTimestamp: String?,
+
+    @SerializedName("has_archive")
+    val hasArchive: Int = 0,
+
+    @SerializedName("now_playing")
+    val nowPlaying: Int = 0
+)

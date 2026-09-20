@@ -5,8 +5,9 @@ import androidx.room.Room
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.iptvapp.data.local.AppDatabase
+import com.iptvapp.data.local.dao.CategoryDao
 import com.iptvapp.data.local.dao.ChannelDao
-import com.iptvapp.data.remote.ApiService
+import com.iptvapp.data.remote.XtreamApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -53,15 +54,15 @@ object AppModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit =
         Retrofit.Builder()
-            .baseUrl("https://placeholder.base.url/") // Replace with actual base URL
+            .baseUrl("https://placeholder.base.url/") // Replaced dynamically per-server
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService =
-        retrofit.create(ApiService::class.java)
+    fun provideXtreamApiService(retrofit: Retrofit): XtreamApiService =
+        retrofit.create(XtreamApiService::class.java)
 
     // ── Database ─────────────────────────────────────────────────────────
 
@@ -80,4 +81,9 @@ object AppModule {
     @Singleton
     fun provideChannelDao(database: AppDatabase): ChannelDao =
         database.channelDao()
+
+    @Provides
+    @Singleton
+    fun provideCategoryDao(database: AppDatabase): CategoryDao =
+        database.categoryDao()
 }
