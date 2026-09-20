@@ -133,4 +133,7 @@ dependencies {
     // ── Coroutines ───────────────────────────────────────────────────────
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
+
+    // ── Coil ─────────────────────────────────────────────────────────────
+    implementation(libs.coil.compose)
 }
