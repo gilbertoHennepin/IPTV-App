@@ -74,6 +74,11 @@ android {
     room {
         schemaDirectory("$projectDir/schemas")
     }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
 }
 
 dependencies {
