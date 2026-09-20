@@ -19,6 +19,22 @@ android {
         versionName = "1.0.0"
     }
 
+    // ── Signing Config (CI) ──────────────────────────────────────────────
+    // Environment variables are set by the GitHub Actions workflow.
+    // When building locally without these vars, the release build will
+    // fall back to the debug signing config.
+    signingConfigs {
+        create("release") {
+            val storeFilePath = System.getenv("SIGNING_STORE_FILE")
+            if (storeFilePath != null) {
+                storeFile = file(storeFilePath)
+                storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -27,6 +43,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Use the release signing config when env vars are present (CI)
+            val storeFilePath = System.getenv("SIGNING_STORE_FILE")
+            signingConfig = if (storeFilePath != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
         debug {
             isDebuggable = true
