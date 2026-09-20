@@ -11,6 +11,7 @@ composeBom = "2024.12.01"
 composeCompiler = "1.5.15"
 activityCompose = "1.9.3"
 tvCompose = "1.1.0"
+tvFoundation = "1.0.0"
 
 # AndroidX Core
 coreKtx = "1.15.0"
@@ -62,7 +63,7 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 
 # TV Compose
 androidx-tv-material = { group = "androidx.tv", name = "tv-material", version.ref = "tvCompose" }
-androidx-tv-foundation = { group = "androidx.tv", name = "tv-foundation", version.ref = "tvCompose" }
+androidx-tv-foundation = { group = "androidx.tv", name = "tv-foundation", version.ref = "tvFoundation" }
 
 # Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
