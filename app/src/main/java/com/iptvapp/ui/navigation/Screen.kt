@@ -15,8 +15,14 @@ sealed class Screen(val route: String) {
         fun createRoute(channelId: Long): String = "channel_detail/$channelId"
     }
 
+    /** Fullscreen Live Media3 ExoPlayer video player screen. */
+    data object Player : Screen("player/{channelId}") {
+        /** Builds a concrete route for a given channel ID. */
+        fun createRoute(channelId: Long): String = "player/$channelId"
+    }
+
     companion object {
-        /** NavArgument key for the channel ID on the detail screen. */
+        /** NavArgument key for the channel ID. */
         const val ARG_CHANNEL_ID = "channelId"
     }
 }

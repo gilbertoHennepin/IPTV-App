@@ -8,13 +8,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.iptvapp.ui.screens.detail.ChannelDetailScreen
 import com.iptvapp.ui.screens.home.HomeScreen
+import com.iptvapp.ui.screens.player.PlayerScreen
 
 /**
  * Top-level navigation graph for the IPTV application.
  *
  * Configures [saveState] and [restoreState] on navigation actions
  * so that the Home grid preserves its scroll position and focus
- * state when returning from the detail screen.
+ * state when returning from the player screen.
  */
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -29,7 +30,7 @@ fun AppNavGraph(navController: NavHostController) {
             HomeScreen(
                 onChannelClick = { channelId ->
                     navController.navigate(
-                        route = Screen.ChannelDetail.createRoute(channelId)
+                        route = Screen.Player.createRoute(channelId)
                     ) {
                         // Save the Home screen state (scroll + focus) before navigating
                         launchSingleTop = true
@@ -39,7 +40,23 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        // ── Channel Detail / Player Screen ───────────────────────────────
+        // ── Fullscreen Live Video Player Screen ──────────────────────────
+        composable(
+            route = Screen.Player.route,
+            arguments = listOf(
+                navArgument(Screen.ARG_CHANNEL_ID) {
+                    type = NavType.LongType
+                }
+            )
+        ) {
+            PlayerScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // ── Channel Detail Screen (Legacy / Info) ────────────────────────
         composable(
             route = Screen.ChannelDetail.route,
             arguments = listOf(
