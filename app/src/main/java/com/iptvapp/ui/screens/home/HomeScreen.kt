@@ -53,7 +53,8 @@ import com.iptvapp.ui.screens.vod.VodScreen
 @Composable
 fun HomeScreen(
     onChannelClick: (Long) -> Unit,
-    onSeriesClick: (Long) -> Unit = {},
+    onSeriesClick: (Long) -> Unit,
+    onLogout: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val channels by viewModel.channels.collectAsState()
@@ -63,7 +64,7 @@ fun HomeScreen(
     val syncMessage by viewModel.syncMessage.collectAsState()
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Live TV", "TV Guide", "Movies", "Series", "Favorites", "Search")
+    val tabs = listOf("Live TV", "TV Guide", "Movies", "Series", "Favorites", "Search", "Settings")
 
     // ── FocusRequester Map ────────────────────────────────────────────────
     // One FocusRequester per channel, keyed by channel ID.
@@ -147,7 +148,9 @@ fun HomeScreen(
             }
 
             // ── Content ──────────────────────────────────────────────────
-            if (selectedTabIndex == 5) {
+            if (selectedTabIndex == 6) {
+                com.iptvapp.ui.screens.settings.SettingsScreen(onLogoutComplete = onLogout)
+            } else if (selectedTabIndex == 5) {
                 SearchScreen(onChannelClick = onChannelClick)
             } else if (selectedTabIndex == 4) {
                 com.iptvapp.ui.screens.favorites.FavoritesScreen(onChannelClick = onChannelClick)
