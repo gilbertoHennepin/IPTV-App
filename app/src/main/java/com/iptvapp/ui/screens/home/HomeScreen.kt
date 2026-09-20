@@ -29,6 +29,13 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import androidx.tv.material3.TabRow
+import androidx.tv.material3.Tab
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import com.iptvapp.ui.screens.epg.EpgGridScreen
+import com.iptvapp.ui.screens.search.SearchScreen
+import com.iptvapp.ui.screens.vod.VodScreen
 
 /**
  * Home screen displaying the live channel catalog in a [TvLazyVerticalGrid].
@@ -49,6 +56,12 @@ fun HomeScreen(
 ) {
     val channels by viewModel.channels.collectAsState()
     val lastFocusedId by viewModel.lastFocusedChannelId.collectAsState()
+
+    val isSyncing by viewModel.isSyncing.collectAsState()
+    val syncMessage by viewModel.syncMessage.collectAsState()
+
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Live TV", "TV Guide", "Movies (VOD)", "Search")
 
     // ── FocusRequester Map ────────────────────────────────────────────────
     // One FocusRequester per channel, keyed by channel ID.
@@ -95,80 +108,103 @@ fun HomeScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // ── Header ───────────────────────────────────────────────────
+            // ── Top Navigation Tabs & Sync Status ────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 48.dp, top = 40.dp, end = 48.dp, bottom = 16.dp)
             ) {
-                Column {
-                    Text(
-                        text = "Live TV",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${channels.size} channels",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF78909C)
-                    )
-                }
-            }
-
-            // ── Channel Grid ─────────────────────────────────────────────
-            if (channels.isEmpty()) {
-                // Empty state
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    TabRow(selectedTabIndex = selectedTabIndex) {
+                        tabs.forEachIndexed { index, title ->
+                            Tab(
+                                selected = index == selectedTabIndex,
+                                onFocus = { selectedTabIndex = index }
+                            ) {
+                                Text(
+                                    text = title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    if (isSyncing || syncMessage != null) {
                         Text(
-                            text = "No channels loaded",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = Color(0xFF546E7A)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Add your Xtream Codes server to get started",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF455A64)
+                            text = syncMessage ?: "Syncing...",
+                            color = Color(0xFF64FFDA),
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 176.dp),
-                    contentPadding = PaddingValues(
-                        start = 48.dp,
-                        end = 48.dp,
-                        top = 8.dp,
-                        bottom = 48.dp
-                    ),
-                    horizontalArrangement = Arrangement.spacedBy(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(
-                        items = channels,
-                        key = { it.id }
-                    ) { channel ->
-                        // Get or create a FocusRequester for this channel
-                        val focusRequester = focusRequesters.getOrPut(channel.id) {
-                            FocusRequester()
-                        }
+            }
 
-                        ChannelCard(
-                            channel = channel,
-                            focusRequester = focusRequester,
-                            onFocused = {
-                                viewModel.onChannelFocused(channel.id)
-                            },
-                            onClick = {
-                                onChannelClick(channel.id)
+            // ── Content ──────────────────────────────────────────────────
+            if (selectedTabIndex == 3) {
+                SearchScreen(onChannelClick = onChannelClick)
+            } else if (selectedTabIndex == 2) {
+                VodScreen(onMovieClick = onChannelClick)
+            } else if (selectedTabIndex == 1) {
+                EpgGridScreen(onChannelClick = onChannelClick)
+            } else {
+                if (channels.isEmpty()) {
+                    // Empty state
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "No channels loaded",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = Color(0xFF546E7A)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Add your Xtream Codes server to get started",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color(0xFF455A64)
+                            )
+                        }
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minSize = 176.dp),
+                        contentPadding = PaddingValues(
+                            start = 48.dp,
+                            end = 48.dp,
+                            top = 8.dp,
+                            bottom = 48.dp
+                        ),
+                        horizontalArrangement = Arrangement.spacedBy(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(
+                            items = channels,
+                            key = { it.id }
+                        ) { channel ->
+                            // Get or create a FocusRequester for this channel
+                            val focusRequester = focusRequesters.getOrPut(channel.id) {
+                                FocusRequester()
                             }
-                        )
+
+                            ChannelCard(
+                                channel = channel,
+                                focusRequester = focusRequester,
+                                onFocused = {
+                                    viewModel.onChannelFocused(channel.id)
+                                },
+                                onClick = {
+                                    onChannelClick(channel.id)
+                                }
+                            )
+                        }
                     }
                 }
             }

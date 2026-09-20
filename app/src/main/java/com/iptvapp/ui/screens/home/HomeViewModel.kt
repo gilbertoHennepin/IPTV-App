@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.iptvapp.data.local.entity.CategoryEntity
 import com.iptvapp.data.local.entity.ChannelEntity
+import com.iptvapp.data.repository.AuthManager
 import com.iptvapp.data.repository.ChannelRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +24,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: ChannelRepository
+    private val repository: ChannelRepository,
+    private val authManager: AuthManager
 ) : ViewModel() {
 
     /** All channels from the local database, observed reactively. */
@@ -67,5 +70,56 @@ class HomeViewModel @Inject constructor(
     /** Clears the stored focus target (e.g. after successful restore). */
     fun clearFocusTarget() {
         _lastFocusedChannelId.value = null
+    }
+
+    /** True while a sync operation is in progress. */
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+
+    /** Message representing sync progress. */
+    private val _syncMessage = MutableStateFlow<String?>(null)
+    val syncMessage: StateFlow<String?> = _syncMessage.asStateFlow()
+
+    init {
+        // Automatically sync data when the ViewModel is created (if channels are empty)
+        syncData()
+    }
+
+    /**
+     * Authenticates via AuthManager and synchronizes live TV and VOD channels.
+     */
+    fun syncData() {
+        viewModelScope.launch {
+            if (_isSyncing.value) return@launch
+
+            val host = authManager.hostUrlFlow.firstOrNull() ?: return@launch
+            val user = authManager.usernameFlow.firstOrNull() ?: return@launch
+            val pass = authManager.passwordFlow.firstOrNull() ?: return@launch
+
+            _isSyncing.value = true
+            _syncMessage.value = "Syncing Live TV..."
+
+            try {
+                // Since replaceAllChannelsAndRebuildIndex deletes all channels, we must sync Live streams first.
+                val liveResult = repository.syncLiveStreams(host, user, pass)
+                if (liveResult.isSuccess) {
+                    _syncMessage.value = "Syncing Movies (VOD)..."
+                    val vodResult = repository.syncVodStreams(host, user, pass)
+                    if (vodResult.isSuccess) {
+                        _syncMessage.value = "Sync Complete!"
+                    } else {
+                        _syncMessage.value = "Error syncing VOD: ${vodResult.exceptionOrNull()?.message}"
+                    }
+                } else {
+                    _syncMessage.value = "Error syncing Live TV: ${liveResult.exceptionOrNull()?.message}"
+                }
+            } catch (e: Exception) {
+                _syncMessage.value = "Sync failed: ${e.message}"
+            } finally {
+                kotlinx.coroutines.delay(2000) // Keep message visible for a moment
+                _isSyncing.value = false
+                _syncMessage.value = null
+            }
+        }
     }
 }
