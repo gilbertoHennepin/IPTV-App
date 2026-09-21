@@ -1,6 +1,6 @@
 {
-  "versionCode": 2,
-  "versionName": "1.1",
-  "apkUrl": "https://raw.githubusercontent.com/gilbertoHennepin/IPTV-App/main/releases/app-release-v1.1.apk",
-  "releaseNotes": "First OTA update!"
+  "versionCode": 3,
+  "versionName": "1.2",
+  "apkUrl": "https://raw.githubusercontent.com/gilbertoHennepin/IPTV-App/main/releases/app-release-v1.2.apk",
+  "releaseNotes": "Polla TV Logo and Multi-View feature!"
 }

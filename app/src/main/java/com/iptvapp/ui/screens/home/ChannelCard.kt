@@ -116,6 +116,37 @@ fun ChannelCard(
                         .size(16.dp)
                 )
             }
+
+            // Stream Type Badge (Useful for Search Results)
+            if (channel.streamType != null) {
+                val badgeText = when (channel.streamType) {
+                    "live" -> "LIVE"
+                    "movie" -> "MOVIE"
+                    "series", "episode" -> "SERIES"
+                    else -> channel.streamType.uppercase()
+                }
+                val badgeColor = when (channel.streamType) {
+                    "live" -> Color(0xFFE53935)
+                    "movie" -> Color(0xFF1E88E5)
+                    "series", "episode" -> Color(0xFF8E24AA)
+                    else -> Color.DarkGray
+                }
+                
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp)
+                        .background(badgeColor, MaterialTheme.shapes.small)
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = badgeText,
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
         }
     }
 }

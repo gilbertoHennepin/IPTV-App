@@ -31,6 +31,7 @@ import com.iptvapp.ui.screens.home.ChannelCard
 @Composable
 fun SearchScreen(
     onChannelClick: (Long) -> Unit,
+    onSeriesClick: (Long) -> Unit,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val query by viewModel.query.collectAsState()
@@ -117,7 +118,13 @@ fun SearchScreen(
                             channel = channel,
                             focusRequester = cardFocusRequester,
                             onFocused = {}, // We don't save last focused ID for search screen
-                            onClick = { onChannelClick(channel.id) }
+                            onClick = { 
+                                if (channel.streamType == "series" || channel.streamType == "episode") {
+                                    onSeriesClick(channel.id)
+                                } else {
+                                    onChannelClick(channel.id)
+                                }
+                            }
                         )
                     }
                 }
