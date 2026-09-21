@@ -14,11 +14,15 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.iptvapp.updater.UpdateInfo
+import com.iptvapp.updater.UpdateManager
+
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val authManager: AuthManager,
     private val channelDao: ChannelDao,
-    private val categoryDao: CategoryDao
+    private val categoryDao: CategoryDao,
+    private val updateManager: UpdateManager
 ) : ViewModel() {
 
     val hostUrl: StateFlow<String?> = authManager.hostUrlFlow.stateIn(
@@ -36,6 +40,35 @@ class SettingsViewModel @Inject constructor(
     private val _isLoggedOut = MutableStateFlow(false)
     val isLoggedOut: StateFlow<Boolean> = _isLoggedOut.asStateFlow()
 
+    private val _updateState = MutableStateFlow<UpdateState>(UpdateState.Idle)
+    val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()
+
+    fun checkForUpdates() {
+        _updateState.value = UpdateState.Checking
+        viewModelScope.launch {
+            val result = updateManager.checkForUpdates()
+            if (result.isSuccess) {
+                val info = result.getOrNull()
+                if (info != null && info.isUpdateAvailable) {
+                    _updateState.value = UpdateState.UpdateAvailable(info)
+                } else {
+                    _updateState.value = UpdateState.UpToDate
+                }
+            } else {
+                _updateState.value = UpdateState.Error(result.exceptionOrNull()?.localizedMessage ?: "Unknown error")
+            }
+        }
+    }
+
+    fun startUpdateDownload(info: UpdateInfo) {
+        _updateState.value = UpdateState.Downloading
+        updateManager.startDownload(info)
+    }
+
+    fun resetUpdateState() {
+        _updateState.value = UpdateState.Idle
+    }
+
     fun logout() {
         viewModelScope.launch {
             authManager.clearCredentials()
@@ -44,4 +77,13 @@ class SettingsViewModel @Inject constructor(
             _isLoggedOut.value = true
         }
     }
+}
+
+sealed class UpdateState {
+    object Idle : UpdateState()
+    object Checking : UpdateState()
+    data class UpdateAvailable(val info: UpdateInfo) : UpdateState()
+    object UpToDate : UpdateState()
+    object Downloading : UpdateState()
+    data class Error(val message: String) : UpdateState()
 }

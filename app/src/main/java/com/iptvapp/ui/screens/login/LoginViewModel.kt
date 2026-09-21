@@ -66,8 +66,9 @@ class LoginViewModel @Inject constructor(
                 }
 
                 // Call authenticate endpoint
+                val apiUrl = "$host/player_api.php"
                 val response = xtreamApi.authenticate(
-                    url = host,
+                    url = apiUrl,
                     username = state.username.trim(),
                     password = state.password.trim()
                 )

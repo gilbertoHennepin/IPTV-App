@@ -36,8 +36,9 @@ class EpgRepository @Inject constructor(
             val password = authManager.passwordFlow.firstOrNull() ?: error("Password not set")
 
             // We limit to 20 programs per channel to keep the payload small
+            val apiUrl = "$host/player_api.php"
             val response = xtreamApi.getShortEpg(
-                url = host,
+                url = apiUrl,
                 username = username,
                 password = password,
                 streamId = streamId,

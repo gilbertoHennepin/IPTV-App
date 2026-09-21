@@ -43,6 +43,10 @@ fun LoginScreen(
     val passFocus = remember { androidx.compose.ui.focus.FocusRequester() }
     val btnFocus = remember { androidx.compose.ui.focus.FocusRequester() }
 
+    LaunchedEffect(Unit) {
+        urlFocus.requestFocus()
+    }
+
     LaunchedEffect(uiState.isAuthenticated) {
         if (uiState.isAuthenticated) {
             onLoginSuccess()

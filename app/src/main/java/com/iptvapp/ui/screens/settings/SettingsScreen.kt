@@ -40,6 +40,7 @@ fun SettingsScreen(
     val hostUrl by viewModel.hostUrl.collectAsState()
     val username by viewModel.username.collectAsState()
     val isLoggedOut by viewModel.isLoggedOut.collectAsState()
+    val updateState by viewModel.updateState.collectAsState()
 
     LaunchedEffect(isLoggedOut) {
         if (isLoggedOut) {
@@ -96,7 +97,36 @@ fun SettingsScreen(
                 Text(text = username ?: "Unknown", color = Color.White, style = MaterialTheme.typography.bodyLarge)
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = { viewModel.checkForUpdates() },
+                colors = ButtonDefaults.colors(
+                    containerColor = Color(0xFF2979FF),
+                    focusedContainerColor = Color(0xFF448AFF),
+                    contentColor = Color.White,
+                    focusedContentColor = Color.White
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    Icon(imageVector = Icons.Filled.Settings, contentDescription = "Updates")
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = when (updateState) {
+                            is UpdateState.Checking -> "Checking..."
+                            is UpdateState.Downloading -> "Downloading..."
+                            else -> "Check for Updates"
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = { viewModel.logout() },
@@ -126,6 +156,58 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
+
+            // Update Dialogs
+            if (updateState is UpdateState.UpdateAvailable) {
+                val info = (updateState as UpdateState.UpdateAvailable).info
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { viewModel.resetUpdateState() },
+                    title = { Text("Update Available", color = Color.White) },
+                    text = { 
+                        Column {
+                            Text("Version ${info.latestVersionName} is available!", color = Color.LightGray)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("Release Notes:", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(info.releaseNotes, color = Color.Gray)
+                        }
+                    },
+                    containerColor = Color(0xFF1E1E2E),
+                    confirmButton = {
+                        androidx.compose.material3.TextButton(onClick = { viewModel.startUpdateDownload(info) }) {
+                            Text("Download & Install", color = Color(0xFF64FFDA))
+                        }
+                    },
+                    dismissButton = {
+                        androidx.compose.material3.TextButton(onClick = { viewModel.resetUpdateState() }) {
+                            Text("Cancel", color = Color.Gray)
+                        }
+                    }
+                )
+            } else if (updateState is UpdateState.UpToDate) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { viewModel.resetUpdateState() },
+                    title = { Text("Up to Date", color = Color.White) },
+                    text = { Text("You are already on the latest version.", color = Color.LightGray) },
+                    containerColor = Color(0xFF1E1E2E),
+                    confirmButton = {
+                        androidx.compose.material3.TextButton(onClick = { viewModel.resetUpdateState() }) {
+                            Text("OK", color = Color(0xFF64FFDA))
+                        }
+                    }
+                )
+            } else if (updateState is UpdateState.Error) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { viewModel.resetUpdateState() },
+                    title = { Text("Update Error", color = Color.White) },
+                    text = { Text("Could not check for updates: ${(updateState as UpdateState.Error).message}", color = Color.LightGray) },
+                    containerColor = Color(0xFF1E1E2E),
+                    confirmButton = {
+                        androidx.compose.material3.TextButton(onClick = { viewModel.resetUpdateState() }) {
+                            Text("OK", color = Color(0xFF64FFDA))
+                        }
+                    }
+                )
+            }
         }
     }
 }

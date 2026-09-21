@@ -75,7 +75,8 @@ class ChannelRepository @Inject constructor(
         username: String,
         password: String
     ): Result<List<CategoryEntity>> = runCatching {
-        val response = xtreamApi.getLiveCategories(serverUrl, username, password)
+        val apiUrl = "$serverUrl/player_api.php"
+        val response = xtreamApi.getLiveCategories(apiUrl, username, password)
         if (!response.isSuccessful) {
             error("Failed to fetch categories: HTTP ${response.code()}")
         }
@@ -100,7 +101,8 @@ class ChannelRepository @Inject constructor(
         val categories = fetchCategoryLookup(serverUrl, username, password)
         val favs = channelDao.getFavoriteStreamIds().toSet()
 
-        val response = xtreamApi.getLiveStreams(serverUrl, username, password, categoryId = categoryId)
+        val apiUrl = "$serverUrl/player_api.php"
+        val response = xtreamApi.getLiveStreams(apiUrl, username, password, categoryId = categoryId)
         if (!response.isSuccessful) {
             error("Failed to fetch live streams: HTTP ${response.code()}")
         }
@@ -133,7 +135,8 @@ class ChannelRepository @Inject constructor(
         val categories = fetchCategoryLookup(serverUrl, username, password)
         val favs = channelDao.getFavoriteStreamIds().toSet()
 
-        val response = xtreamApi.getVodStreams(serverUrl, username, password, categoryId = categoryId)
+        val apiUrl = "$serverUrl/player_api.php"
+        val response = xtreamApi.getVodStreams(apiUrl, username, password, categoryId = categoryId)
         if (!response.isSuccessful) {
             error("Failed to fetch VOD streams: HTTP ${response.code()}")
         }
@@ -170,7 +173,8 @@ class ChannelRepository @Inject constructor(
         val categories = fetchCategoryLookup(serverUrl, username, password)
         val favs = channelDao.getFavoriteStreamIds().toSet()
 
-        val response = xtreamApi.getSeries(serverUrl, username, password, categoryId = categoryId)
+        val apiUrl = "$serverUrl/player_api.php"
+        val response = xtreamApi.getSeries(apiUrl, username, password, categoryId = categoryId)
         if (!response.isSuccessful) {
             error("Failed to fetch series: HTTP ${response.code()}")
         }
@@ -193,7 +197,8 @@ class ChannelRepository @Inject constructor(
         password: String,
         seriesId: Int
     ): Result<com.iptvapp.data.remote.dto.SeriesInfoResponse> = runCatching {
-        val response = xtreamApi.getSeriesInfo(serverUrl, username, password, seriesId)
+        val apiUrl = "$serverUrl/player_api.php"
+        val response = xtreamApi.getSeriesInfo(apiUrl, username, password, seriesId)
         if (!response.isSuccessful) {
             error("Failed to fetch series info: HTTP ${response.code()}")
         }
@@ -233,7 +238,8 @@ class ChannelRepository @Inject constructor(
         streamId: Int,
         limit: Int? = null
     ): Result<List<EpgListingDto>> = runCatching {
-        val response = xtreamApi.getShortEpg(serverUrl, username, password, streamId, limit = limit)
+        val apiUrl = "$serverUrl/player_api.php"
+        val response = xtreamApi.getShortEpg(apiUrl, username, password, streamId, limit = limit)
         if (!response.isSuccessful) {
             error("Failed to fetch EPG: HTTP ${response.code()}")
         }
@@ -274,7 +280,8 @@ class ChannelRepository @Inject constructor(
         username: String,
         password: String
     ): Map<String, String> {
-        val response = xtreamApi.getLiveCategories(serverUrl, username, password)
+        val apiUrl = "$serverUrl/player_api.php"
+        val response = xtreamApi.getLiveCategories(apiUrl, username, password)
         val dtos = response.body() ?: return emptyMap()
         return dtos.associate { it.categoryId to it.categoryName }
     }
