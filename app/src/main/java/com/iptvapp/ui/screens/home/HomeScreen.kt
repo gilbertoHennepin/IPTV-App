@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -22,7 +25,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -95,7 +97,14 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TabRow(selectedTabIndex = selectedTabIndex) {
+                val refreshFocusRequester = remember { FocusRequester() }
+
+                TabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    modifier = Modifier.focusProperties {
+                        right = refreshFocusRequester
+                    }
+                ) {
                     tabs.forEachIndexed { index, title ->
                         Tab(
                             selected = index == selectedTabIndex,
@@ -119,6 +128,7 @@ fun HomeScreen(
                 } else {
                     androidx.tv.material3.Button(
                         onClick = { viewModel.syncData() },
+                        modifier = Modifier.focusRequester(refreshFocusRequester),
                         colors = androidx.tv.material3.ButtonDefaults.colors(
                             containerColor = Color.Transparent,
                             focusedContainerColor = Color(0xFF282A36),
