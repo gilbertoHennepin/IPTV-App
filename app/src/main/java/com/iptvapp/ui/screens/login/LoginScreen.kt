@@ -13,6 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
@@ -34,6 +37,15 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
+
+    val urlFocus = remember { androidx.compose.ui.focus.FocusRequester() }
+    val userFocus = remember { androidx.compose.ui.focus.FocusRequester() }
+    val passFocus = remember { androidx.compose.ui.focus.FocusRequester() }
+    val btnFocus = remember { androidx.compose.ui.focus.FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        urlFocus.requestFocus()
+    }
 
     LaunchedEffect(uiState.isAuthenticated) {
         if (uiState.isAuthenticated) {
@@ -65,7 +77,13 @@ fun LoginScreen(
                 onValueChange = viewModel::updateHostUrl,
                 label = "Host URL (e.g., http://provider.com:8080)",
                 imeAction = ImeAction.Next,
-                onImeAction = { focusManager.moveFocus(FocusDirection.Down) }
+                onImeAction = { userFocus.requestFocus() },
+                modifier = Modifier
+                    .focusRequester(urlFocus)
+                    .focusProperties { 
+                        down = userFocus
+                        next = userFocus 
+                    }
             )
 
             TvTextField(
@@ -73,7 +91,14 @@ fun LoginScreen(
                 onValueChange = viewModel::updateUsername,
                 label = "Username",
                 imeAction = ImeAction.Next,
-                onImeAction = { focusManager.moveFocus(FocusDirection.Down) }
+                onImeAction = { passFocus.requestFocus() },
+                modifier = Modifier
+                    .focusRequester(userFocus)
+                    .focusProperties { 
+                        up = urlFocus
+                        down = passFocus
+                        next = passFocus
+                    }
             )
 
             TvTextField(
@@ -82,7 +107,14 @@ fun LoginScreen(
                 label = "Password",
                 isPassword = true,
                 imeAction = ImeAction.Done,
-                onImeAction = { focusManager.clearFocus() }
+                onImeAction = { btnFocus.requestFocus() },
+                modifier = Modifier
+                    .focusRequester(passFocus)
+                    .focusProperties { 
+                        up = userFocus
+                        down = btnFocus
+                        next = btnFocus
+                    }
             )
 
             if (uiState.errorMessage != null) {
@@ -101,7 +133,12 @@ fun LoginScreen(
             } else {
                 Button(
                     onClick = { viewModel.authenticate(onLoginSuccess) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(btnFocus)
+                        .focusProperties { 
+                            up = passFocus
+                        }
                 ) {
                     Text(
                         text = "Login",
@@ -121,7 +158,8 @@ fun TvTextField(
     label: String,
     isPassword: Boolean = false,
     imeAction: ImeAction,
-    onImeAction: () -> Unit
+    onImeAction: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
@@ -146,7 +184,7 @@ fun TvTextField(
             unfocusedTextColor = Color.LightGray,
             cursorColor = MaterialTheme.colorScheme.primary
         ),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .onFocusChanged { isFocused = it.isFocused }
             .then(
