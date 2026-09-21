@@ -43,9 +43,7 @@ fun LoginScreen(
     val passFocus = remember { androidx.compose.ui.focus.FocusRequester() }
     val btnFocus = remember { androidx.compose.ui.focus.FocusRequester() }
 
-    LaunchedEffect(Unit) {
-        urlFocus.requestFocus()
-    }
+    // Don't auto-focus text fields — let the user D-Pad navigate and press Enter to type
 
     LaunchedEffect(uiState.isAuthenticated) {
         if (uiState.isAuthenticated) {

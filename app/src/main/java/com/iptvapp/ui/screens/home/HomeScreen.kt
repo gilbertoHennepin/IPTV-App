@@ -115,7 +115,7 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 48.dp, top = 40.dp, end = 48.dp, bottom = 16.dp)
+                    .padding(start = 48.dp, top = 24.dp, end = 48.dp, bottom = 8.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -147,7 +147,8 @@ fun HomeScreen(
                 }
             }
 
-            // ── Content ──────────────────────────────────────────────────
+            // ── Content (fills all remaining space below the tab bar) ────
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             if (selectedTabIndex == 7) {
                 com.iptvapp.ui.screens.settings.SettingsScreen(onLogoutComplete = onLogout)
             } else if (selectedTabIndex == 6) {
@@ -199,6 +200,7 @@ fun HomeScreen(
                     )
                 }
             }
+            } // end Box(weight)
         }
     }
 }

@@ -39,14 +39,7 @@ fun SearchScreen(
     val focusManager = LocalFocusManager.current
     val searchFocusRequester = remember { FocusRequester() }
 
-    // Auto-focus the search field when the screen appears
-    LaunchedEffect(Unit) {
-        try {
-            searchFocusRequester.requestFocus()
-        } catch (e: Exception) {
-            // Ignore if not yet attached
-        }
-    }
+    // Don't auto-focus the search field — let the user D-Pad to it and press Enter to type
 
     Box(
         modifier = Modifier

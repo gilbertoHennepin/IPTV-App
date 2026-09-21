@@ -1,8 +1,11 @@
 package com.iptvapp.ui.screens.player
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import com.iptvapp.data.local.entity.ChannelEntity
 import com.iptvapp.data.repository.ChannelRepository
 import com.iptvapp.player.PlayerManager
@@ -41,6 +44,10 @@ class PlayerViewModel @Inject constructor(
     val playerManager: PlayerManager
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "PlayerViewModel"
+    }
+
     private val targetChannelId: Long =
         checkNotNull(savedStateHandle[Screen.ARG_CHANNEL_ID]) {
             "channelId parameter was not provided to PlayerViewModel"
@@ -50,6 +57,33 @@ class PlayerViewModel @Inject constructor(
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
 
     private var osdHideJob: Job? = null
+
+    /** Error listener that catches ExoPlayer playback failures and surfaces them in the UI. */
+    private val errorListener = object : Player.Listener {
+        override fun onPlayerError(error: PlaybackException) {
+            Log.e(TAG, "Playback error: ${error.message}", error)
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    error = "Playback failed: ${error.message ?: "Unknown error"}"
+                )
+            }
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            when (playbackState) {
+                Player.STATE_READY -> {
+                    _uiState.update { it.copy(isLoading = false, error = null) }
+                }
+                Player.STATE_BUFFERING -> {
+                    _uiState.update { it.copy(isLoading = true) }
+                }
+                Player.STATE_ENDED, Player.STATE_IDLE -> {
+                    // no-op
+                }
+            }
+        }
+    }
 
     init {
         loadChannelsAndPlayInitial()
@@ -85,8 +119,15 @@ class PlayerViewModel @Inject constructor(
      */
     fun playChannel(channel: ChannelEntity) {
         _uiState.update { it.copy(currentChannel = channel, isLoading = true, error = null) }
-        playerManager.play(channel.url, channel.name)
-        _uiState.update { it.copy(isLoading = false) }
+        try {
+            // Attach the error listener before playing
+            playerManager.player?.removeListener(errorListener)
+            playerManager.play(channel.url, channel.name)
+            playerManager.player?.addListener(errorListener)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start playback", e)
+            _uiState.update { it.copy(isLoading = false, error = "Failed to start playback: ${e.message}") }
+        }
         showOsd()
     }
 
@@ -151,6 +192,11 @@ class PlayerViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         osdHideJob?.cancel()
-        playerManager.release()
+        // IMPORTANT: Do NOT call playerManager.release() here!
+        // PlayerManager is a @Singleton — releasing it would destroy the shared
+        // instance and crash the app if the user navigates back to the player.
+        // Just stop playback and remove our listener.
+        playerManager.player?.removeListener(errorListener)
+        playerManager.stop()
     }
 }
