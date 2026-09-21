@@ -112,6 +112,26 @@ fun HomeScreen(
                         color = Color(0xFF64FFDA),
                         style = MaterialTheme.typography.bodySmall
                     )
+                } else {
+                    androidx.tv.material3.Button(
+                        onClick = { viewModel.syncData() },
+                        colors = androidx.tv.material3.ButtonDefaults.colors(
+                            containerColor = Color.Transparent,
+                            focusedContainerColor = Color(0xFF282A36),
+                            contentColor = Color.Gray,
+                            focusedContentColor = Color.White
+                        )
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            androidx.tv.material3.Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Refresh,
+                                contentDescription = "Refresh Data",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Refresh Data", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                 }
             }
 

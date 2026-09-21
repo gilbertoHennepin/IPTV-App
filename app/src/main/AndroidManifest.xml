@@ -24,6 +24,7 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.App.Starting"
+        android:largeHeap="true"
         android:usesCleartextTraffic="true">
 
         <activity
