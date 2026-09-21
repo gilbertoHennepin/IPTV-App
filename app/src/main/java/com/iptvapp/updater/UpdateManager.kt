@@ -27,8 +27,8 @@ data class UpdateInfo(
 class UpdateManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    // Placeholder URL - update this to your actual hosted update.json later!
-    private val UPDATE_JSON_URL = "https://raw.githubusercontent.com/PLACEHOLDER/update.json"
+    // This points to the update.json file hosted on your public GitHub repository
+    private val UPDATE_JSON_URL = "https://raw.githubusercontent.com/gilbertoHennepin/IPTV-App/main/update.json"
 
     suspend fun checkForUpdates(): Result<UpdateInfo> = withContext(Dispatchers.IO) {
         try {
