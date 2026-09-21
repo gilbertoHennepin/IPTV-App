@@ -2,9 +2,6 @@ package com.iptvapp.ui.screens.vod
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,24 +29,19 @@ fun VodScreen(
 ) {
     val movies by viewModel.movies.collectAsState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 48.dp, end = 48.dp, top = 24.dp)
-    ) {
-        com.iptvapp.ui.components.CategorySidebarGrid(
-            channels = movies,
-            minGridCellSize = 150.dp,
-            contentPadding = PaddingValues(bottom = 48.dp),
-            itemContent = { movie, _ ->
-                MovieCard(
-                    movie = movie,
-                    onClick = { onMovieClick(movie.id) },
-                    onLongClick = { viewModel.toggleFavorite(movie) }
-                )
-            }
-        )
-    }
+    // No extra Box wrapper — the parent HomeScreen already provides the container
+    com.iptvapp.ui.components.CategorySidebarGrid(
+        channels = movies,
+        minGridCellSize = 150.dp,
+        contentPadding = PaddingValues(start = 24.dp, end = 48.dp, top = 8.dp, bottom = 48.dp),
+        itemContent = { movie, _ ->
+            MovieCard(
+                movie = movie,
+                onClick = { onMovieClick(movie.id) },
+                onLongClick = { viewModel.toggleFavorite(movie) }
+            )
+        }
+    )
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -69,7 +61,7 @@ fun MovieCard(
         ),
         modifier = Modifier
             .width(150.dp)
-            .aspectRatio(2f / 3f) // Standard movie poster ratio
+            .aspectRatio(2f / 3f)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (!movie.logoUrl.isNullOrBlank()) {
@@ -80,7 +72,6 @@ fun MovieCard(
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
-                // Fallback if no poster is available
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -99,7 +90,6 @@ fun MovieCard(
                 }
             }
 
-            // Favorite Icon Overlay
             if (movie.isFavorite) {
                 androidx.compose.material3.Icon(
                     imageVector = Icons.Filled.Favorite,

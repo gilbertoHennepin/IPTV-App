@@ -1,5 +1,6 @@
 package com.iptvapp.ui.screens.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.iptvapp.data.local.entity.CategoryEntity
@@ -16,18 +17,15 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * ViewModel for the Home screen.
- *
- * Exposes reactive [StateFlow]s for the channel list and search results,
- * and tracks the ID of the last focused card so the grid can restore
- * focus after navigating back from the detail screen.
- */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: ChannelRepository,
     private val authManager: AuthManager
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "HomeViewModel"
+    }
 
     /** All live channels from the local database, observed reactively. */
     val channels: StateFlow<List<ChannelEntity>> = repository.getLiveChannels()
@@ -45,49 +43,31 @@ class HomeViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    /** Current search query text. */
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
-    /** Search results (empty if no query). */
-    private val _searchResults = MutableStateFlow<List<ChannelEntity>>(emptyList())
-    val searchResults: StateFlow<List<ChannelEntity>> = _searchResults.asStateFlow()
-
-    /**
-     * The ID of the last card that held D-Pad focus.
-     *
-     * Persisted across configuration changes via the ViewModel lifecycle.
-     * The HomeScreen reads this after a [popBackStack] to re-focus the
-     * correct card via [FocusRequester.requestFocus].
-     */
     private val _lastFocusedChannelId = MutableStateFlow<Long?>(null)
     val lastFocusedChannelId: StateFlow<Long?> = _lastFocusedChannelId.asStateFlow()
 
-    /** Called when a card gains D-Pad focus. */
     fun onChannelFocused(channelId: Long) {
         _lastFocusedChannelId.value = channelId
     }
 
-    /** Clears the stored focus target (e.g. after successful restore). */
     fun clearFocusTarget() {
         _lastFocusedChannelId.value = null
     }
 
-    /** True while a sync operation is in progress. */
     private val _isSyncing = MutableStateFlow(false)
     val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
 
-    /** Message representing sync progress. */
     private val _syncMessage = MutableStateFlow<String?>(null)
     val syncMessage: StateFlow<String?> = _syncMessage.asStateFlow()
 
     init {
-        // Automatically sync data when the ViewModel is created (if channels are empty)
         syncData()
     }
 
     /**
-     * Authenticates via AuthManager and synchronizes live TV and VOD channels.
+     * Syncs live TV, VOD, and series data from the Xtream server.
+     * Each sync step is independent — if VOD fails, series still runs.
+     * Errors are logged but don't crash the app.
      */
     fun syncData() {
         viewModelScope.launch {
@@ -98,39 +78,44 @@ class HomeViewModel @Inject constructor(
             val pass = authManager.passwordFlow.firstOrNull() ?: return@launch
 
             _isSyncing.value = true
-            _syncMessage.value = "Syncing Live TV..."
 
             try {
-                // Since replaceAllChannelsAndRebuildIndex deletes all channels, we must sync Live streams first.
+                // Step 1: Live TV
+                _syncMessage.value = "Syncing Live TV..."
                 val liveResult = repository.syncLiveStreams(host, user, pass)
-                if (liveResult.isSuccess) {
-                    _syncMessage.value = "Syncing Movies (VOD)..."
-                    val vodResult = repository.syncVodStreams(host, user, pass)
-                    if (vodResult.isSuccess) {
-                        _syncMessage.value = "Syncing TV Series..."
-                        val seriesResult = repository.syncSeries(host, user, pass)
-                        if (seriesResult.isSuccess) {
-                            _syncMessage.value = "Sync Complete!"
-                        } else {
-                            _syncMessage.value = "Error syncing Series: ${seriesResult.exceptionOrNull()?.message}"
-                        }
-                    } else {
-                        _syncMessage.value = "Error syncing VOD: ${vodResult.exceptionOrNull()?.message}"
-                    }
-                } else {
-                    _syncMessage.value = "Error syncing Live TV: ${liveResult.exceptionOrNull()?.message}"
+                if (liveResult.isFailure) {
+                    Log.e(TAG, "Live TV sync failed", liveResult.exceptionOrNull())
+                    _syncMessage.value = "Live TV sync error"
                 }
+
+                // Step 2: VOD (always attempt, even if live failed)
+                _syncMessage.value = "Syncing Movies..."
+                val vodResult = repository.syncVodStreams(host, user, pass)
+                if (vodResult.isFailure) {
+                    Log.e(TAG, "VOD sync failed", vodResult.exceptionOrNull())
+                    _syncMessage.value = "Movies sync error"
+                }
+
+                // Step 3: Series (always attempt)
+                _syncMessage.value = "Syncing TV Series..."
+                val seriesResult = repository.syncSeries(host, user, pass)
+                if (seriesResult.isFailure) {
+                    Log.e(TAG, "Series sync failed", seriesResult.exceptionOrNull())
+                    _syncMessage.value = "Series sync error"
+                }
+
+                _syncMessage.value = "Sync Complete!"
             } catch (e: Exception) {
-                _syncMessage.value = "Sync failed: ${e.message}"
+                Log.e(TAG, "Sync failed with exception", e)
+                _syncMessage.value = "Sync failed"
             } finally {
-                kotlinx.coroutines.delay(2000) // Keep message visible for a moment
+                kotlinx.coroutines.delay(2000)
                 _isSyncing.value = false
                 _syncMessage.value = null
             }
         }
     }
 
-    /** Toggles the favorite status of a channel. */
     fun toggleFavorite(channel: ChannelEntity) {
         viewModelScope.launch {
             repository.toggleFavorite(channel)

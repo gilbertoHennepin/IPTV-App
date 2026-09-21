@@ -44,9 +44,9 @@ fun SearchScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 48.dp, end = 48.dp, top = 24.dp)
+            .padding(start = 48.dp, end = 48.dp, top = 8.dp)
     ) {
-        Column {
+        Column(modifier = Modifier.fillMaxSize()) {
             // Search Input Field
             var isFocused by remember { mutableStateOf(false) }
 
