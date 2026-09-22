@@ -64,7 +64,10 @@ fun CategorySidebarGrid(
 
     // 1. Extract unique categories from the dataset
     val categories = remember(channels) {
-        listOf("All") + channels.mapNotNull { it.categoryName }.distinct().sorted()
+        val baseCategories = channels.mapNotNull { it.categoryName }.distinct().sorted()
+        val hasFavorites = channels.any { it.isFavorite }
+        val prefix = if (hasFavorites) listOf("Favorites", "All") else listOf("All")
+        prefix + baseCategories
     }
 
     // 2. Track selected category
@@ -72,7 +75,11 @@ fun CategorySidebarGrid(
 
     // 3. Filter channels based on selected category
     val filteredChannels = remember(channels, selectedCategory) {
-        if (selectedCategory == "All") channels else channels.filter { it.categoryName == selectedCategory }
+        when (selectedCategory) {
+            "Favorites" -> channels.filter { it.isFavorite }
+            "All" -> channels
+            else -> channels.filter { it.categoryName == selectedCategory }
+        }
     }
 
     // A map of FocusRequesters for the grid items to handle fast scrolling safely
