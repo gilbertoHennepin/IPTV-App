@@ -25,6 +25,8 @@ import com.iptvapp.data.local.entity.ChannelEntity
 @Composable
 fun VodScreen(
     onMovieClick: (Long) -> Unit,
+    refreshLabel: String? = null,
+    onRefreshClick: (() -> Unit)? = null,
     viewModel: VodViewModel = hiltViewModel()
 ) {
     val movies by viewModel.movies.collectAsState()
@@ -33,6 +35,8 @@ fun VodScreen(
     com.iptvapp.ui.components.CategorySidebarGrid(
         channels = movies,
         minGridCellSize = 150.dp,
+        refreshLabel = refreshLabel,
+        onRefreshClick = onRefreshClick,
         contentPadding = PaddingValues(start = 24.dp, end = 48.dp, top = 8.dp, bottom = 48.dp),
         itemContent = { movie, _ ->
             MovieCard(

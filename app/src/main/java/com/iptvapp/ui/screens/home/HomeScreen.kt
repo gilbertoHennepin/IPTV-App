@@ -126,41 +126,8 @@ fun HomeScreen(
                         style = MaterialTheme.typography.bodySmall
                     )
                 } else {
-                    val refreshLabel = when(selectedTabIndex) {
-                        0 -> "Refresh Live TV"
-                        1 -> "Refresh Movies"
-                        2 -> "Refresh Series"
-                        else -> "Refresh All Data"
-                    }
-                    val onRefreshClick: () -> Unit = {
-                        when(selectedTabIndex) {
-                            0 -> viewModel.syncLiveTvOnly()
-                            1 -> viewModel.syncMoviesOnly()
-                            2 -> viewModel.syncSeriesOnly()
-                            else -> viewModel.syncData()
-                        }
-                    }
-
-                    androidx.tv.material3.Button(
-                        onClick = onRefreshClick,
-                        modifier = Modifier.focusRequester(refreshFocusRequester),
-                        colors = androidx.tv.material3.ButtonDefaults.colors(
-                            containerColor = Color.Transparent,
-                            focusedContainerColor = Color(0xFF282A36),
-                            contentColor = Color.Gray,
-                            focusedContentColor = Color.White
-                        )
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            androidx.tv.material3.Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = "Refresh Data",
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(refreshLabel, style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
+                    // Empty space instead of top bar refresh
+                    Spacer(modifier = Modifier.width(20.dp))
                 }
             }
 
@@ -169,8 +136,16 @@ fun HomeScreen(
                 when (selectedTabIndex) {
                     4 -> com.iptvapp.ui.screens.settings.SettingsScreen(onLogoutComplete = onLogout)
                     3 -> SearchScreen(onChannelClick = onChannelClick, onSeriesClick = onSeriesClick)
-                    2 -> com.iptvapp.ui.screens.series.SeriesScreen(onSeriesClick = onSeriesClick)
-                    1 -> VodScreen(onMovieClick = onChannelClick)
+                    2 -> com.iptvapp.ui.screens.series.SeriesScreen(
+                        onSeriesClick = onSeriesClick,
+                        refreshLabel = "Refresh Series",
+                        onRefreshClick = { viewModel.syncSeriesOnly() }
+                    )
+                    1 -> VodScreen(
+                        onMovieClick = onChannelClick,
+                        refreshLabel = "Refresh Movies",
+                        onRefreshClick = { viewModel.syncMoviesOnly() }
+                    )
                     else -> {
                         if (channels.isEmpty() && !isSyncing) {
                             Box(
@@ -195,6 +170,8 @@ fun HomeScreen(
                             com.iptvapp.ui.components.CategorySidebarGrid(
                                 channels = channels,
                                 minGridCellSize = 200.dp,
+                                refreshLabel = "Refresh Live TV",
+                                onRefreshClick = { viewModel.syncLiveTvOnly() },
                                 itemContent = { channel, focusRequester ->
                                     ChannelCard(
                                         channel = channel,

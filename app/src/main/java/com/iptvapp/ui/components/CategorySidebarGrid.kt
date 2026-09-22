@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -41,6 +44,8 @@ fun CategorySidebarGrid(
     channels: List<ChannelEntity>,
     minGridCellSize: Dp,
     contentPadding: PaddingValues = PaddingValues(start = 24.dp, end = 48.dp, top = 8.dp, bottom = 48.dp),
+    refreshLabel: String? = null,
+    onRefreshClick: (() -> Unit)? = null,
     itemContent: @Composable (ChannelEntity, FocusRequester) -> Unit
 ) {
     if (channels.isEmpty()) {
@@ -82,6 +87,31 @@ fun CategorySidebarGrid(
             contentPadding = PaddingValues(start = 48.dp, top = 8.dp, bottom = 48.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            if (refreshLabel != null && onRefreshClick != null) {
+                item {
+                    androidx.tv.material3.Button(
+                        onClick = onRefreshClick,
+                        colors = androidx.tv.material3.ButtonDefaults.colors(
+                            containerColor = Color(0xFF1E1E2E),
+                            focusedContainerColor = Color(0xFF64FFDA),
+                            contentColor = Color.LightGray,
+                            focusedContentColor = Color.Black
+                        ),
+                        modifier = Modifier.padding(bottom = 16.dp).width(200.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            androidx.tv.material3.Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Refresh,
+                                contentDescription = "Refresh",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(refreshLabel, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
+
             items(categories) { category ->
                 var isFocused by remember { mutableStateOf(false) }
 

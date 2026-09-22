@@ -22,6 +22,8 @@ import com.iptvapp.ui.screens.home.ChannelCard
 @Composable
 fun SeriesScreen(
     onSeriesClick: (Long) -> Unit,
+    refreshLabel: String? = null,
+    onRefreshClick: (() -> Unit)? = null,
     viewModel: SeriesViewModel = hiltViewModel()
 ) {
     val seriesList by viewModel.seriesList.collectAsState()
@@ -29,6 +31,8 @@ fun SeriesScreen(
     com.iptvapp.ui.components.CategorySidebarGrid(
         channels = seriesList,
         minGridCellSize = 140.dp,
+        refreshLabel = refreshLabel,
+        onRefreshClick = onRefreshClick,
         contentPadding = PaddingValues(start = 48.dp, end = 48.dp, top = 8.dp, bottom = 48.dp),
         itemContent = { series, focusRequester ->
             ChannelCard(
