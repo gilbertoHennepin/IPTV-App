@@ -116,6 +116,63 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun syncLiveTvOnly() {
+        viewModelScope.launch {
+            if (_isSyncing.value) return@launch
+            val host = authManager.hostUrlFlow.firstOrNull() ?: return@launch
+            val user = authManager.usernameFlow.firstOrNull() ?: return@launch
+            val pass = authManager.passwordFlow.firstOrNull() ?: return@launch
+
+            _isSyncing.value = true
+            _syncMessage.value = "Syncing Live TV..."
+            val result = repository.syncLiveStreams(host, user, pass)
+            if (result.isFailure) _syncMessage.value = "Live TV sync error"
+            else _syncMessage.value = "Live TV Updated!"
+            
+            kotlinx.coroutines.delay(2000)
+            _isSyncing.value = false
+            _syncMessage.value = null
+        }
+    }
+
+    fun syncMoviesOnly() {
+        viewModelScope.launch {
+            if (_isSyncing.value) return@launch
+            val host = authManager.hostUrlFlow.firstOrNull() ?: return@launch
+            val user = authManager.usernameFlow.firstOrNull() ?: return@launch
+            val pass = authManager.passwordFlow.firstOrNull() ?: return@launch
+
+            _isSyncing.value = true
+            _syncMessage.value = "Syncing Movies..."
+            val result = repository.syncVodStreams(host, user, pass)
+            if (result.isFailure) _syncMessage.value = "Movies sync error"
+            else _syncMessage.value = "Movies Updated!"
+            
+            kotlinx.coroutines.delay(2000)
+            _isSyncing.value = false
+            _syncMessage.value = null
+        }
+    }
+
+    fun syncSeriesOnly() {
+        viewModelScope.launch {
+            if (_isSyncing.value) return@launch
+            val host = authManager.hostUrlFlow.firstOrNull() ?: return@launch
+            val user = authManager.usernameFlow.firstOrNull() ?: return@launch
+            val pass = authManager.passwordFlow.firstOrNull() ?: return@launch
+
+            _isSyncing.value = true
+            _syncMessage.value = "Syncing TV Series..."
+            val result = repository.syncSeries(host, user, pass)
+            if (result.isFailure) _syncMessage.value = "Series sync error"
+            else _syncMessage.value = "Series Updated!"
+            
+            kotlinx.coroutines.delay(2000)
+            _isSyncing.value = false
+            _syncMessage.value = null
+        }
+    }
+
     fun toggleFavorite(channel: ChannelEntity) {
         viewModelScope.launch {
             repository.toggleFavorite(channel)

@@ -126,8 +126,23 @@ fun HomeScreen(
                         style = MaterialTheme.typography.bodySmall
                     )
                 } else {
+                    val refreshLabel = when(selectedTabIndex) {
+                        0 -> "Refresh Live TV"
+                        1 -> "Refresh Movies"
+                        2 -> "Refresh Series"
+                        else -> "Refresh All Data"
+                    }
+                    val onRefreshClick: () -> Unit = {
+                        when(selectedTabIndex) {
+                            0 -> viewModel.syncLiveTvOnly()
+                            1 -> viewModel.syncMoviesOnly()
+                            2 -> viewModel.syncSeriesOnly()
+                            else -> viewModel.syncData()
+                        }
+                    }
+
                     androidx.tv.material3.Button(
-                        onClick = { viewModel.syncData() },
+                        onClick = onRefreshClick,
                         modifier = Modifier.focusRequester(refreshFocusRequester),
                         colors = androidx.tv.material3.ButtonDefaults.colors(
                             containerColor = Color.Transparent,
@@ -143,7 +158,7 @@ fun HomeScreen(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Refresh Data", style = MaterialTheme.typography.bodySmall)
+                            Text(refreshLabel, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
