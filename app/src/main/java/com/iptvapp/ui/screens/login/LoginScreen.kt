@@ -160,10 +160,13 @@ fun TvTextField(
     modifier: Modifier = Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    var isEditing by remember { mutableStateOf(false) }
+    val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
 
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
+        readOnly = !isEditing,
         label = { androidx.compose.material3.Text(label, color = if (isFocused) Color.White else Color.Gray) },
         singleLine = true,
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
@@ -172,8 +175,16 @@ fun TvTextField(
             imeAction = imeAction
         ),
         keyboardActions = KeyboardActions(
-            onNext = { onImeAction() },
-            onDone = { onImeAction() }
+            onNext = { 
+                isEditing = false
+                keyboardController?.hide()
+                onImeAction() 
+            },
+            onDone = { 
+                isEditing = false
+                keyboardController?.hide()
+                onImeAction() 
+            }
         ),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -184,12 +195,37 @@ fun TvTextField(
         ),
         modifier = modifier
             .fillMaxWidth()
-            .onFocusChanged { isFocused = it.isFocused }
+            .onFocusChanged { 
+                isFocused = it.isFocused 
+                if (!it.isFocused) {
+                    isEditing = false
+                    keyboardController?.hide()
+                }
+            }
+            .androidx.compose.ui.input.key.onKeyEvent { event ->
+                if (event.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
+                    if (event.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_DPAD_CENTER ||
+                        event.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_ENTER) {
+                        if (!isEditing) {
+                            isEditing = true
+                            keyboardController?.show()
+                            return@onKeyEvent true
+                        }
+                    } else if (event.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_BACK) {
+                        if (isEditing) {
+                            isEditing = false
+                            keyboardController?.hide()
+                            return@onKeyEvent true
+                        }
+                    }
+                }
+                false
+            }
             .then(
                 if (isFocused) {
                     Modifier.border(
                         width = 2.dp,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = if (isEditing) Color(0xFF64FFDA) else MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(4.dp)
                     )
                 } else {
