@@ -23,6 +23,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.key
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -202,16 +205,18 @@ fun TvTextField(
                     keyboardController?.hide()
                 }
             }
-            .androidx.compose.ui.input.key.onKeyEvent { event ->
-                if (event.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
-                    if (event.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_DPAD_CENTER ||
-                        event.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_ENTER) {
+            .onKeyEvent { event ->
+                if (event.type == androidx.compose.ui.input.key.KeyEventType.KeyDown) {
+                    if (event.key == androidx.compose.ui.input.key.Key.DirectionCenter ||
+                        event.key == androidx.compose.ui.input.key.Key.Enter ||
+                        event.key == androidx.compose.ui.input.key.Key.NumPadEnter) {
                         if (!isEditing) {
                             isEditing = true
                             keyboardController?.show()
                             return@onKeyEvent true
                         }
-                    } else if (event.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_BACK) {
+                    } else if (event.key == androidx.compose.ui.input.key.Key.Back ||
+                               event.key == androidx.compose.ui.input.key.Key.Escape) {
                         if (isEditing) {
                             isEditing = false
                             keyboardController?.hide()
